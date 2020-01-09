@@ -1,0 +1,84 @@
+---
+title: "Indian Liver Patient Records"
+author: "Wilson Moreno"
+date: "1/8/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+# Methods/Analysis
+
+## Step 0: require package
+```{r Step_0,  warning = FALSE, message=FALSE, results='hide'}
+if (!require(package)) install.packages('pastecs', repos = "http://cran.us.r-project.org")
+if (!require(package)) install.packages('knitr', repos = "http://cran.us.r-project.org")
+if (!require(package)) install.packages('ggplot2', repos = "http://cran.us.r-project.org")
+library(pastecs)
+library(knitr)
+library(ggplot2)
+```
+
+## **Step 1:** Load the data base
+
+```{r Step_1}
+database <- read.csv("Data/indian_liver_patient.csv")
+```
+
+## **Step 2:** Exploratory Data Analusis 
+
+### Summay Statistics
+
+```{r Step_2.1, results='asis'}
+kable(data.frame(stat.desc(database)))
+```
+
+### Visualization
+
+```{r Step_2.2, , message=FALSE, results='hide', warning=FALSE}
+scale_database <- database %>% select(-Gender,-Dataset) %>% scale() %>% as.data.frame() %>% 
+  cbind(Gender = database$Gender)
+
+database.gathered <- scale_database  %>% as.data.frame() %>% 
+  gather(key = "variable", value = "value", - Gender)
+
+ggplot(data = database.gathered , mapping = aes(x = value, color = Gender)) +
+  geom_histogram() +
+  facet_wrap(facets =  vars(variable ))
+
+
+```
+
+
+
+
+
+
+# Results
+
+
+# Conclusion
+
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
