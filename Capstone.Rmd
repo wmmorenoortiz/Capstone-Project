@@ -2,7 +2,9 @@
 title: "Indian Liver Patient Records"
 author: "Wilson Moreno"
 date: "1/8/2020"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -22,31 +24,30 @@ if (!require(package)) install.packages('ggplot2', repos = "http://cran.us.r-pro
 library(knitr)
 library(ggplot2)
 library(psych)
+library(caret)
 ```
 
-## **Step 1:** Load the data base
+### **Step 1:** Load the data base
 
 ```{r Step_1}
 database <- read.csv("Data/indian_liver_patient.csv")
 ```
 
-## **Step 2:** Exploratory Data Analusis 
+### **Step 2:** Exploratory Data Analysis 
 
-### Summay Statistics
+#### Summay Statistics
+The following table shows the descriptive statistics for all the variables in the database.
 
 ```{r Step_2.1}
 
-tmp <- describeBy(database,
-           digits= 2)
-round(data.frame(tmp),1)
-
+round(data.frame( describeBy(database, digits= 2)),1)
 # tmp <- describeBy(database,
 #            group = database$Gender,
 #            digits= 1)
 
 ```
 
-### Visualization
+#### Visualization
 
 As can be seen in the visual analysis of the data, they were divided into 2 groups by gender, in all the graphs the rates are much higher in women than in men, and tend to follow the same distribution. Variables: Age, Albumin, Albumin_and_Globulin_Ratio and Total_Protiens, are suspected to follow a normal distribution. 
 
@@ -72,9 +73,33 @@ ggplot(data = database.gathered , mapping = aes(sample = value, color = Gender))
 
 ```
 
+### **Step 3:** Choose the Model and train the model with the training base.
+
+#### Choose only the variables of interest.
+#new_edx <- edx %>% select(rating,userId,movieId)
+#head(new_edx)
+
+#### Split the database in training and testing
+set.seed(755)
+test_index <- createDataPartition(y = database, times = 1,
+                                  p = 0.2, list = FALSE)
+
+train_set <- new_edx[-test_index,]
+test_set <- new_edx[test_index,]
+
+test_set <- test_set %>% 
+  semi_join(train_set, by = "movieId") %>%
+  semi_join(train_set, by = "userId")
+
+RMSE <- function(true_ratings, predicted_ratings){
+  sqrt(mean((true_ratings - predicted_ratings)^2))
+}
 
 
 # Results
+
+
+
 ### Summay Statistics
 
 
