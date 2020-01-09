@@ -17,7 +17,6 @@ head(database)
 
 t <- describeBy(database,
            digits= 2)
-t
 h = data.frame(t$Female)
 round(h, 2)
 

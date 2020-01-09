@@ -39,6 +39,7 @@ database <- read.csv("Data/indian_liver_patient.csv")
 tmp <- describeBy(database,
            digits= 2)
 round(data.frame(tmp),1)
+
 # tmp <- describeBy(database,
 #            group = database$Gender,
 #            digits= 1)
