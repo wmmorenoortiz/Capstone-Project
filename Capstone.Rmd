@@ -13,10 +13,11 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Introduction
+The present work wishes to predict if a patient in India is going to suffer from liver disease, by means of some indicators, for example: Age, Gender, Alkaline_Phosphography, etc. The result of a categorical variable. Different types of approaches are used such as: using all variables, through a correlation matrix and by specific variables.
 
 # Methods/Analysis
 
-## Step 0: require package
+### Step 0: require package
 ```{r Step_0,  warning = FALSE, message=FALSE, results='hide'}
 if (!require(package)) install.packages('psych', repos = "http://cran.us.r-project.org")
 if (!require(package)) install.packages('knitr', repos = "http://cran.us.r-project.org")
@@ -73,57 +74,109 @@ ggplot(data = database.gathered , mapping = aes(sample = value, color = Gender))
 
 ```
 
-### **Step 3:** Choose the Model and train the model with the training base.
+### **Step 3:**  Split the database in training and testing
 
-#### Choose only the variables of interest.
-#new_edx <- edx %>% select(rating,userId,movieId)
-#head(new_edx)
 
 #### Split the database in training and testing
+
+```{r Step_3, , message=FALSE, results='hide', warning=FALSE}
 set.seed(755)
-test_index <- createDataPartition(y = database, times = 1,
+test_index <- createDataPartition(y = database$Dataset, times = 1,
                                   p = 0.2, list = FALSE)
 
-train_set <- new_edx[-test_index,]
-test_set <- new_edx[test_index,]
+train_set <- database[-test_index,]
+test_set <- database[test_index,]
 
-test_set <- test_set %>% 
-  semi_join(train_set, by = "movieId") %>%
-  semi_join(train_set, by = "userId")
 
 RMSE <- function(true_ratings, predicted_ratings){
   sqrt(mean((true_ratings - predicted_ratings)^2))
 }
 
 
+```
+
+
+How will the logistic regression algorithm be used **glm ()** you have to modify the response variable **Data set** to values of 0 if the person does not suffer the disease and 1 if a person suffers the disease and convert the gender variable into a factor.
+
+```{r Step_3.1, , message=FALSE, results='hide', warning=FALSE}
+# Modify the response variable.
+train_set$Dataset[train_set$Dataset == 1] = 1
+train_set$Dataset[train_set$Dataset == 2] = 0
+test_set$Dataset[test_set$Dataset == 1] = 1
+test_set$Dataset[test_set$Dataset == 2] = 0
+
+# convert the variable into factor
+train_set$Gender <- as.factor(train_set$Gender)
+test_set$Gender <- as.factor(test_set$Gender)
+
+```
+
+### **Step  4:** Choose the Model and train the model with the training base
+For the following approach some models are used, which are a function of the predictive variables to choose.
+
+#### Model 1: Using all the variables
+
+```{r Step_4.1, , message=FALSE , warning=FALSE}
+mol_1 <- glm(Dataset ~. , data = train_set, family = binomial() )
+```
+
+#### Model 2: Variables + correlation
+
+```{r Step_4.2.1, , message=FALSE , warning=FALSE}
+round(cor(database[,-2]),2)
+```
+From the correlation matrix it can be observed that there is a high degree of correlation between the variables ** Total_Bilirubin ** with ** Direct_Bilirubin ** and ** Albumin ** with ** Total_Protiens **, therefore, it can be removed from the database.
+
+```{r Step_4.2.2, , message=FALSE , warning=FALSE}
+train_set_mol_2 = train_set %>% select(-Total_Bilirubin,-Total_Protiens)
+mol_2 <- glm(Dataset ~. , data = train_set_mol_2, family = binomial())
+```
+
+#### Model 3: Significant variables
+
+```{r Step_4.3.1, , message=FALSE , warning=FALSE}
+summary(mol_1)
+```
+
+From the summary of model 1, where all the variables were used, it can be seen that the significant ones where their p-value is minus 0.05 are: ** Age ** and ** Alamine_Aminotransferase **. Therefore, only those variables are selected.
+
+```{r Step_4.3.2, , message=FALSE , warning=FALSE}
+train_set_mol_3 = train_set %>% select(Age,Alamine_Aminotransferase)
+mol_3 <- glm(Dataset ~. , data = train_set, family = binomial())
+```
+
+### **Step  5:** Predict the possible ratings for the test base
+#### Model 1: Using all the variables
+
+```{r Step_5.1, , message=FALSE , warning=FALSE}
+y_hat_1 <- predict(mol_1,test_set,type = "response")
+glm.pred_1  <- ifelse(y_hat_1 > 0.5, "1", "0")
+accuracy <- data_frame(method="Using all the variables",
+                       Accuracy = mean(glm.pred_1 == test_set$Dataset))
+```
+
+```{r Step_5.2, , message=FALSE , warning=FALSE}
+y_hat_2 <- predict(mol_2,test_set,type = "response")
+glm.pred_2  <- ifelse(y_hat_2 > 0.5, "1", "0")
+accuracy <- bind_rows(accuracy,data_frame(method="Variables + correlation",
+                       Accuracy = mean(glm.pred_2 == test_set$Dataset)))
+```
+
+```{r Step_5.3, , message=FALSE , warning=FALSE}
+y_hat_3 <- predict(mol_3,test_set,type = "response")
+glm.pred_3  <- ifelse(y_hat_3 > 0.5, "1", "0")
+accuracy <- bind_rows(accuracy,data_frame(method="Significant variables",
+                                          Accuracy = mean(glm.pred_3 == test_set$Dataset)))
+```
+
+### **Step  6:** Accuracy
+```{r Step_6, , message=FALSE , warning=FALSE}
+accuracy
+```
+
 # Results
-
-
-
-### Summay Statistics
-
-
-### Visualization
-
-
+As more relevant results in the exploratory analysis it can be observed that the distribution in men and women for the different variables is similar, this allows us to think that gender is not a relevant variable to take into account, that it can be justified because it does not It is significant in the analysis of the third model. On the basis of the second graph, it can also be observed that certain variables are distributed normally, which is good, if one wishes to make univariate predictions of them. After partitioning the data in training and testing, to be later modeled by means of different approaches, it is evident that through the precision that model 1 and model 3 are equal, take into account that model 3 It only consists of 2 variables (**Age** and **Alamine_Aminotransferase**) to achieve this accuracy, therefore, they are the most important characteristics to know and predict if a patient will suffer from a liver problem.
 
 # Conclusion
 
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+From the researched literature, decision trees or Vector Support Machine could be taken as models to achieve better prediction levels.
