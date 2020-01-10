@@ -2,15 +2,15 @@
 if(!require(data.table)) install.packages("data.table", repos = "http://cran.us.r-project.org")
 if(!require(tidyverse)) install.packages("tidyverse", repos = "http://cran.us.r-project.org")
 if(!require(caret)) install.packages("caret", repos = "http://cran.us.r-project.org")
+#if (!require(package)) install.packages('psych', repos = "http://cran.us.r-project.org")
 library(caret)
 library(tidyverse)
 library(ggplot2)
-library(tidyverse)
+library(psych)
 
 ## **Step 1:** Load the data base
 database <- read.csv("Data/indian_liver_patient.csv")
 head(database)
-
 
 ## **Step 2:** Exploratory Data Analusis 
 ### Summay Statistics
