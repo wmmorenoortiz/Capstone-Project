@@ -3,8 +3,8 @@ title: "Indian Liver Patient Records"
 author: "Wilson Moreno"
 date: "1/8/2020"
 output:
-  word_document: default
   html_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
